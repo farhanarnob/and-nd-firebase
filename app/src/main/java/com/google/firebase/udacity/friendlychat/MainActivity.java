@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 FriendlyMessage friendlyMessage = new FriendlyMessage(mMessageEditText.getText().toString(), mUsername, null);
                 mMessagesDatabaseReference.push().setValue(friendlyMessage);
 
-                // Clear input box
+                // Clear input box text
                 mMessageEditText.setText("");
             }
         });
