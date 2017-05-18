@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Clear input box text.
                 mMessageEditText.setText("");
+                mMessageEditText.setText("");
             }
         });
 
