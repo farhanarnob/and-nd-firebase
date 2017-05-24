@@ -1,18 +1,3 @@
-/**
- * Copyright Google Inc. All Rights Reserved.
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.google.firebase.udacity.friendlychat;
 
 import android.os.Bundle;
@@ -124,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
+        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT), new InputFilter.AllCaps()});
 
         // Send button sends a message and clears the EditText
         mSendButton.setOnClickListener(new View.OnClickListener() {
@@ -139,40 +124,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mChildEventListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                FriendlyMessage friendlyMessage = dataSnapshot.getValue(FriendlyMessage.class);
-                mMessageAdapter.add(friendlyMessage);
-            }
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-        mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
         mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    onSignInInitialize();
+                    onSignInInitialize(user.getDisplayName());
                 } else {
                     onSignOutCleanup();
                     startActivityForResult(
@@ -190,9 +148,60 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onSignOutCleanup() {
+        mUsername = ANONYMOUS;
+        mMessageAdapter.clear();
+        detachDatabaseReadListener();
+        
     }
 
-    private void onSignInInitialize() {
+
+    private void onSignInInitialize(String displayName) {
+        mUsername = displayName;
+        attachDatabaseReadListener();
+
+
+    }
+
+    private void detachDatabaseReadListener() {
+        if (mChildEventListener != null) {
+            mMessagesDatabaseReference.removeEventListener(mChildEventListener);
+            mChildEventListener = null;
+        }
+
+    }
+
+    private void attachDatabaseReadListener() {
+        if (mChildEventListener == null) {
+            mChildEventListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    FriendlyMessage friendlyMessage = dataSnapshot.getValue(FriendlyMessage.class);
+                    mMessageAdapter.add(friendlyMessage);
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            };
+            mMessagesDatabaseReference.addChildEventListener(mChildEventListener);
+        }
+
     }
 
     @Override
@@ -211,6 +220,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+        detachDatabaseReadListener();
+        mMessageAdapter.clear();
     }
 
     @Override
