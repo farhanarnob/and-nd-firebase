@@ -21,7 +21,6 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -33,15 +32,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     // Displaying images
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
-
     //for displaying images
     compile 'com.github.bumptech.glide:glide:3.7.0'
-
     //Firebase
     compile 'com.google.firebase:firebase-database:10.2.6'
     compile 'com.google.firebase:firebase-auth:10.2.6'
@@ -49,10 +45,8 @@ dependencies {
     compile 'com.google.firebase:firebase-storage:10.2.6'
     compile 'com.google.firebase:firebase-messaging:10.2.6'
     compile 'com.google.firebase:firebase-config:10.2.6'
-
     //facebook
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-
     testCompile 'junit:junit:4.12'
 }
 // Add to the bottom of the file

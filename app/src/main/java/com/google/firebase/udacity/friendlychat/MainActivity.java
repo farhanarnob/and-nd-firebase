@@ -21,7 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.BuildConfig;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -184,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
 
         Map<String, Object> defaultConfigMap = new HashMap<>();
         defaultConfigMap.put(FRIENDLY_MSG_LENGTH_KEY, DEFAULT_MSG_LENGTH_LIMIT);
-
         mFirebaseRemoteConfig.setDefaults(defaultConfigMap);
         fetchConfig();
     }
@@ -317,9 +315,13 @@ public class MainActivity extends AppCompatActivity {
 
     // fetching remote config from firebase.
     private void fetchConfig() {
-        long cacheExpiration = TimeUnit.HOURS.toSeconds(12);
-        if (BuildConfig.DEBUG) {
+        long cacheExpiration = TimeUnit.HOURS.toSeconds(12); // 1 hour in seconds
+        // If developer mode is enabled reduce cacheExpiration to 0 so that each fetch goes to the
+        // server. This should not be used in release builds.
+        if (mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()) {
             cacheExpiration = 0;
+        } else {
+            Toast.makeText(MainActivity.this, "dev mode not enabled", Toast.LENGTH_SHORT).show();
         }
         mFirebaseRemoteConfig.fetch(cacheExpiration)
                 .addOnSuccessListener(MainActivity.this, new OnSuccessListener<Void>() {
@@ -342,6 +344,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void applyRetrievedLengthLimit() {
         Long friendly_msg_length = mFirebaseRemoteConfig.getLong(FRIENDLY_MSG_LENGTH_KEY);
+        Toast.makeText(MainActivity.this, friendly_msg_length.toString(), Toast.LENGTH_SHORT).show();
         mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(friendly_msg_length.intValue())});
     }
 
